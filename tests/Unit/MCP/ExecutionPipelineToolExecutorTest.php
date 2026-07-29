@@ -3,6 +3,7 @@
 namespace Tests\Unit\MCP;
 
 use App\Events\MCPToolExecuted;
+use App\Events\MCPToolExecutionFailed;
 use App\MCP\Contracts\AuditLoggerInterface;
 use App\MCP\Contracts\ToolExecutorInterface;
 use App\MCP\Contracts\ToolInterface;
@@ -175,6 +176,8 @@ class ExecutionPipelineToolExecutorTest extends TestCase
 
     public function test_executor_blocks_unauthorized_requests(): void
     {
+        Event::fake();
+
         config()->set('mcp.feature_flags.mcp-server', true);
 
         $user = User::factory()->create();
@@ -200,17 +203,68 @@ class ExecutionPipelineToolExecutorTest extends TestCase
 
         $this->expectException(AuthorizationFailedException::class);
 
-        app(ToolExecutorInterface::class)->execute(new ToolRequestDTO(
-            toolName: 'billing.refunds',
-            parameters: ['invoice_id' => 10],
-            context: new ExecutionContextDTO(
-                user: new AuthenticatedUserDTO(
-                    id: $user->id,
-                    name: $user->name,
-                    guard: 'web',
-                    abilities: ['reports:generate'],
+        try {
+            app(ToolExecutorInterface::class)->execute(new ToolRequestDTO(
+                toolName: 'billing.refunds',
+                parameters: ['invoice_id' => 10],
+                context: new ExecutionContextDTO(
+                    user: new AuthenticatedUserDTO(
+                        id: $user->id,
+                        name: $user->name,
+                        guard: 'web',
+                        abilities: ['reports:generate'],
+                    ),
                 ),
-            ),
-        ));
+            ));
+        } finally {
+            Event::assertDispatched(MCPToolExecutionFailed::class);
+        }
+    }
+
+    public function test_executor_dispatches_failure_event_when_tool_execution_throws(): void
+    {
+        Event::fake();
+
+        config()->set('mcp.feature_flags.mcp-server', true);
+
+        $user = User::factory()->create();
+        $tool = new class implements ToolInterface
+        {
+            public function metadata(): ToolMetadataDTO
+            {
+                return new ToolMetadataDTO(
+                    name: 'reports.fail',
+                    description: 'Throw an exception.',
+                    enabled: true,
+                    scopes: ['reports:generate'],
+                );
+            }
+
+            public function execute(array $parameters, ExecutionContextDTO $context): ExecutionResultDTO
+            {
+                throw new \RuntimeException('Tool execution exploded.');
+            }
+        };
+
+        app(ToolRegistryInterface::class)->register($tool);
+
+        $this->expectException(\RuntimeException::class);
+
+        try {
+            app(ToolExecutorInterface::class)->execute(new ToolRequestDTO(
+                toolName: 'reports.fail',
+                parameters: ['account_id' => 10],
+                context: new ExecutionContextDTO(
+                    user: new AuthenticatedUserDTO(
+                        id: $user->id,
+                        name: $user->name,
+                        guard: 'web',
+                        abilities: ['reports:generate'],
+                    ),
+                ),
+            ));
+        } finally {
+            Event::assertDispatched(MCPToolExecutionFailed::class);
+        }
     }
 }

@@ -3,6 +3,7 @@
 namespace App\MCP\Services;
 
 use App\Events\MCPToolExecuted;
+use App\Events\MCPToolExecutionFailed;
 use App\MCP\Actions\RecordAuditEvent;
 use App\MCP\Contracts\AuthorizationInterface;
 use App\MCP\Contracts\FeatureFlagManagerInterface;
@@ -16,6 +17,7 @@ use App\MCP\Enums\FeatureFlag;
 use App\MCP\Exceptions\AuthorizationFailedException;
 use App\MCP\Exceptions\ToolDisabledException;
 use Carbon\CarbonImmutable;
+use Throwable;
 
 class ExecutionPipelineToolExecutor implements ToolExecutorInterface
 {
@@ -32,56 +34,75 @@ class ExecutionPipelineToolExecutor implements ToolExecutorInterface
     {
         $startedAt = microtime(true);
 
-        $this->validator->validate($request);
+        try {
+            $this->validator->validate($request);
 
-        if (! $this->featureFlags->enabled(FeatureFlag::MCPServer->value)) {
-            throw new ToolDisabledException($request->toolName);
-        }
+            if (! $this->featureFlags->enabled(FeatureFlag::MCPServer->value)) {
+                throw new ToolDisabledException($request->toolName);
+            }
 
-        $tool = $this->toolRegistry->resolve($request->toolName);
-        $toolMetadata = collect($this->toolRegistry->all())
-            ->firstWhere('name', $request->toolName) ?? $tool->metadata();
+            $tool = $this->toolRegistry->resolve($request->toolName);
+            $toolMetadata = collect($this->toolRegistry->all())
+                ->firstWhere('name', $request->toolName) ?? $tool->metadata();
 
-        if (! $toolMetadata->enabled) {
-            throw new ToolDisabledException($request->toolName);
-        }
+            if (! $toolMetadata->enabled) {
+                throw new ToolDisabledException($request->toolName);
+            }
 
-        if (array_key_exists('prompt', $request->parameters) && is_string($request->parameters['prompt'])) {
-            $this->promptValidator->ensureSafe($request->parameters['prompt']);
-        }
+            if (array_key_exists('prompt', $request->parameters) && is_string($request->parameters['prompt'])) {
+                $this->promptValidator->ensureSafe($request->parameters['prompt']);
+            }
 
-        $authorization = $this->authorizer->authorize($toolMetadata, $request->context);
+            $authorization = $this->authorizer->authorize($toolMetadata, $request->context);
 
-        if (! $authorization->allowed()) {
-            throw new AuthorizationFailedException(
+            if (! $authorization->allowed()) {
+                throw new AuthorizationFailedException(
+                    toolName: $request->toolName,
+                    message: $authorization->message() ?: 'You are not authorized to execute this tool.',
+                );
+            }
+
+            $result = $tool->execute($request->parameters, $request->context);
+            $durationInMilliseconds = (int) round((microtime(true) - $startedAt) * 1000);
+
+            $response = new ToolResponseDTO(
                 toolName: $request->toolName,
-                message: $authorization->message() ?: 'You are not authorized to execute this tool.',
+                successful: $result->successful,
+                result: $result,
+                durationInMilliseconds: $durationInMilliseconds,
             );
+
+            $this->recordAuditEvent->handle(new AuditEventDTO(
+                toolName: $request->toolName,
+                userId: $request->context->user->id,
+                parameters: $request->parameters,
+                successful: $result->successful,
+                recordedAt: CarbonImmutable::now(),
+                ipAddress: $request->context->ipAddress,
+                durationInMilliseconds: $durationInMilliseconds,
+                failureReason: $result->successful ? null : $result->message,
+            ));
+
+            MCPToolExecuted::dispatch($response);
+
+            return $response;
+        } catch (Throwable $exception) {
+            $durationInMilliseconds = (int) round((microtime(true) - $startedAt) * 1000);
+
+            $this->recordAuditEvent->handle(new AuditEventDTO(
+                toolName: $request->toolName,
+                userId: $request->context->user->id,
+                parameters: $request->parameters,
+                successful: false,
+                recordedAt: CarbonImmutable::now(),
+                ipAddress: $request->context->ipAddress,
+                durationInMilliseconds: $durationInMilliseconds,
+                failureReason: $exception->getMessage(),
+            ));
+
+            MCPToolExecutionFailed::dispatch($request, $exception, $durationInMilliseconds);
+
+            throw $exception;
         }
-
-        $result = $tool->execute($request->parameters, $request->context);
-        $durationInMilliseconds = (int) round((microtime(true) - $startedAt) * 1000);
-
-        $response = new ToolResponseDTO(
-            toolName: $request->toolName,
-            successful: $result->successful,
-            result: $result,
-            durationInMilliseconds: $durationInMilliseconds,
-        );
-
-        $this->recordAuditEvent->handle(new AuditEventDTO(
-            toolName: $request->toolName,
-            userId: $request->context->user->id,
-            parameters: $request->parameters,
-            successful: $result->successful,
-            recordedAt: CarbonImmutable::now(),
-            ipAddress: $request->context->ipAddress,
-            durationInMilliseconds: $durationInMilliseconds,
-            failureReason: $result->successful ? null : $result->message,
-        ));
-
-        MCPToolExecuted::dispatch($response);
-
-        return $response;
     }
 }
