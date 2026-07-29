@@ -11,7 +11,13 @@ This application is a Laravel application and its main Laravel ecosystems packag
 
 - php - 8.4
 - laravel/framework (LARAVEL) - v13
+- laravel/horizon (HORIZON) - v5
+- laravel/pennant (PENNANT) - v1
 - laravel/prompts (PROMPTS) - v0
+- laravel/pulse (PULSE) - v1
+- laravel/sanctum (SANCTUM) - v4
+- laravel/telescope (TELESCOPE) - v5
+- livewire/livewire (LIVEWIRE) - v4
 - laravel/boost (BOOST) - v2
 - laravel/mcp (MCP) - v0
 - laravel/pail (PAIL) - v1

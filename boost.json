@@ -12,6 +12,9 @@
     "sail": false,
     "skills": [
         "laravel-best-practices",
+        "configuring-horizon",
+        "pennant-development",
+        "pulse-development",
         "tailwindcss-development"
     ]
 }

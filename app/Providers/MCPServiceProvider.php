@@ -12,10 +12,10 @@ use App\MCP\Contracts\ToolExecutorInterface;
 use App\MCP\Contracts\ToolRegistryInterface;
 use App\MCP\Services\ConfigFeatureFlagManager;
 use App\MCP\Services\EloquentAuthenticatedUserResolver;
+use App\MCP\Services\ExecutionPipelineToolExecutor;
 use App\MCP\Services\GateAuthorizer;
 use App\MCP\Services\InMemoryToolRegistry;
 use App\MCP\Services\LogAuditLogger;
-use App\MCP\Services\NullToolExecutor;
 use App\MCP\Services\PromptValidator;
 use Illuminate\Support\ServiceProvider;
 
@@ -27,7 +27,7 @@ class MCPServiceProvider extends ServiceProvider
         AuditLoggerInterface::class => LogAuditLogger::class,
         FeatureFlagManagerInterface::class => ConfigFeatureFlagManager::class,
         PromptValidatorInterface::class => PromptValidator::class,
-        ToolExecutorInterface::class => NullToolExecutor::class,
+        ToolExecutorInterface::class => ExecutionPipelineToolExecutor::class,
     ];
 
     public $singletons = [
