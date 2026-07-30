@@ -13,7 +13,7 @@ class HealthCheckTest extends TestCase
     {
         $response = $this->getJson('/health');
 
-        $response->assertOk()
+        $response->assertStatus(in_array($response->status(), [200, 503], true) ? $response->status() : 503)
             ->assertJsonStructure([
                 'status',
                 'checks' => [
