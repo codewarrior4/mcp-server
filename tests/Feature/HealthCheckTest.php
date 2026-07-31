@@ -35,6 +35,28 @@ class HealthCheckTest extends TestCase
             ]);
     }
 
+    public function test_cache_health_endpoint_returns_status_payload(): void
+    {
+        $response = $this->getJson('/health/cache');
+
+        $response->assertStatus(in_array($response->status(), [200, 503], true) ? $response->status() : 503)
+            ->assertJsonStructure([
+                'ok',
+                'driver',
+            ]);
+    }
+
+    public function test_queue_health_endpoint_returns_status_payload(): void
+    {
+        $response = $this->getJson('/health/queue');
+
+        $response->assertStatus(in_array($response->status(), [200, 503], true) ? $response->status() : 503)
+            ->assertJsonStructure([
+                'ok',
+                'driver',
+            ]);
+    }
+
     public function test_redis_health_endpoint_can_report_degraded_state(): void
     {
         $response = $this->getJson('/health/redis');

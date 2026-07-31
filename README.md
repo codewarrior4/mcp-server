@@ -71,7 +71,12 @@ The GitHub workflow validates Composer, installs dependencies, runs migrations, 
 
 ## Docs
 
+- [Security](docs/security.md)
+- [Authentication](docs/authentication.md)
+- [Logging](docs/logging.md)
+- [Execution Flow](docs/execution-flow.md)
 - [Observability](docs/observability.md)
 - [Performance](docs/performance.md)
 - [Production Checklist](docs/production-checklist.md)
 - [Rollback](docs/rollback.md)
+- [Week 01 Retrospective](docs/retrospective-week-01.md)

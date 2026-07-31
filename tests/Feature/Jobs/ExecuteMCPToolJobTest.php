@@ -72,4 +72,24 @@ class ExecuteMCPToolJobTest extends TestCase
         $this->assertSame('req-123', $state->capturedRequest->context->requestId);
         $this->assertSame('queue', $state->capturedRequest->context->metadata['source']);
     }
+
+    public function test_job_exposes_horizon_tags_for_tool_and_user_context(): void
+    {
+        $job = new ExecuteMCPToolJob(
+            toolName: 'reports.generate',
+            parameters: ['account_id' => 1],
+            user: [
+                'id' => 1,
+                'name' => 'Taylor Otwell',
+                'guard' => 'web',
+                'abilities' => ['reports:generate'],
+            ],
+        );
+
+        $this->assertSame([
+            'mcp',
+            'mcp:tool:reports.generate',
+            'mcp:user:1',
+        ], $job->tags());
+    }
 }
