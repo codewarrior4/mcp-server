@@ -26,6 +26,12 @@ The execution pipeline is the core engineering decision in this repository. Ever
 - It makes failures observable.
 - It supports queued execution without changing the domain contract.
 
+## First Real Tool
+
+The first real tool in this repository is `system.overview`.
+
+It returns a safe operational summary of the MCP server and currently supports an `include_stats` flag to optionally include lightweight aggregate data.
+
 ## Failure Modes
 
 - Invalid request

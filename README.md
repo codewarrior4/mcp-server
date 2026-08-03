@@ -26,6 +26,7 @@ This project is building a production-minded Laravel MCP server that exposes int
 
 - MCP contracts and registry
 - execution pipeline
+- first real MCP tool: `system.overview`
 - audit logging
 - queue-ready MCP job execution
 - health endpoints

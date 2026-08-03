@@ -1,6 +1,7 @@
 <?php
 
 use App\MCP\Enums\FeatureFlag;
+use App\MCP\Tools\SystemOverviewTool;
 
 return [
     'default_provider' => env('MCP_DEFAULT_PROVIDER', 'openai'),
@@ -23,6 +24,8 @@ return [
     'max_execution_time' => (int) env('MCP_MAX_EXECUTION_TIME', 30),
     'tool_discovery' => [
         'enabled' => (bool) env('MCP_TOOL_DISCOVERY_ENABLED', true),
-        'tools' => [],
+        'tools' => [
+            SystemOverviewTool::class,
+        ],
     ],
 ];

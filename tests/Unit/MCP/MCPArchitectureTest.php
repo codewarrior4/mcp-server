@@ -224,9 +224,11 @@ class MCPArchitectureTest extends TestCase
         $registry->register($tool);
 
         $resolved = $registry->resolve('reports.generate');
+        $metadata = collect($registry->all())->firstWhere('name', 'reports.generate');
 
         $this->assertSame($tool, $resolved);
-        $this->assertFalse($registry->all()[0]->enabled);
+        $this->assertNotNull($metadata);
+        $this->assertFalse($metadata->enabled);
     }
 
     public function test_registry_prevents_duplicate_tool_registration(): void
@@ -284,12 +286,14 @@ class MCPArchitectureTest extends TestCase
         $registry->register($tool);
         $registry->enable('billing.refunds');
 
-        $enabledMetadata = $registry->all()[0];
+        $enabledMetadata = collect($registry->all())->firstWhere('name', 'billing.refunds');
 
         $registry->disable('billing.refunds');
 
-        $disabledMetadata = $registry->all()[0];
+        $disabledMetadata = collect($registry->all())->firstWhere('name', 'billing.refunds');
 
+        $this->assertNotNull($enabledMetadata);
+        $this->assertNotNull($disabledMetadata);
         $this->assertTrue($enabledMetadata->enabled);
         $this->assertFalse($disabledMetadata->enabled);
     }
@@ -320,8 +324,9 @@ class MCPArchitectureTest extends TestCase
 
         app(RegisterConfiguredTools::class)->handle($registry);
 
-        $this->assertCount(1, $registry->all());
-        $this->assertSame('analytics.summary', $registry->all()[0]->name);
+        $this->assertCount(2, $registry->all());
+        $this->assertNotNull(collect($registry->all())->firstWhere('name', 'system.overview'));
+        $this->assertNotNull(collect($registry->all())->firstWhere('name', 'analytics.summary'));
     }
 
     public function test_configured_tool_registration_rejects_invalid_tools(): void
