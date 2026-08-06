@@ -32,16 +32,17 @@ class MCPToolExecutionController extends Controller
                 'successful' => $response->successful,
                 'payload' => $response->result->payload,
                 'message' => $response->result->message,
+                'request_id' => $request->validated('request_id'),
                 'duration_in_milliseconds' => $response->durationInMilliseconds,
             ]);
         } catch (InvalidToolRequestException $exception) {
             return response()->json($exception->toArray(), 422);
         } catch (AuthorizationFailedException $exception) {
-            return response()->json(['message' => $exception->getMessage()], 403);
+            return response()->json($exception->toArray(), 403);
         } catch (ToolNotFoundException $exception) {
-            return response()->json(['message' => $exception->getMessage()], 404);
+            return response()->json($exception->toArray(), 404);
         } catch (ToolDisabledException $exception) {
-            return response()->json(['message' => $exception->getMessage()], 503);
+            return response()->json($exception->toArray(), 503);
         } catch (Throwable $exception) {
             report($exception);
 

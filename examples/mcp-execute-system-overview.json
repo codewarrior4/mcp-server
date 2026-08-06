@@ -1,0 +1,10 @@
+{
+  "tool_name": "system.overview",
+  "parameters": {
+    "include_stats": true
+  },
+  "request_id": "req-demo-system-overview",
+  "metadata": {
+    "source": "demo"
+  }
+}

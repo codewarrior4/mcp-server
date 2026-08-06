@@ -16,6 +16,7 @@ final readonly class AuditEventDTO
         public bool $successful,
         public CarbonImmutable $recordedAt,
         public ?string $ipAddress = null,
+        public ?string $requestId = null,
         public ?int $durationInMilliseconds = null,
         public ?string $failureReason = null,
     ) {}
@@ -32,6 +33,7 @@ final readonly class AuditEventDTO
             'successful' => $this->successful,
             'recorded_at' => $this->recordedAt->toIso8601String(),
             'ip_address' => $this->ipAddress,
+            'request_id' => $this->requestId,
             'duration_in_milliseconds' => $this->durationInMilliseconds,
             'failure_reason' => $this->failureReason,
         ];

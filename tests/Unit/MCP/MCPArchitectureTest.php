@@ -129,6 +129,7 @@ class MCPArchitectureTest extends TestCase
             successful: false,
             recordedAt: CarbonImmutable::parse('2026-07-28T10:00:00-07:00'),
             ipAddress: '127.0.0.1',
+            requestId: 'req-456',
             durationInMilliseconds: 450,
             failureReason: 'Timed out.',
         );
@@ -140,6 +141,7 @@ class MCPArchitectureTest extends TestCase
             'successful' => false,
             'recorded_at' => '2026-07-28T10:00:00-07:00',
             'ip_address' => '127.0.0.1',
+            'request_id' => 'req-456',
             'duration_in_milliseconds' => 450,
             'failure_reason' => 'Timed out.',
         ], $event->toLogContext());

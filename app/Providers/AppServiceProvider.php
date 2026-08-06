@@ -57,10 +57,8 @@ class AppServiceProvider extends ServiceProvider
 
         Event::listen(function (MCPToolExecutionFailed $event): void {
             Log::warning('MCP tool execution failed.', [
-                'tool_name' => $event->request->toolName,
-                'user_id' => $event->request->context->user->id,
-                'duration_in_milliseconds' => $event->durationInMilliseconds,
                 'message' => $event->exception->getMessage(),
+                ...$event->context(),
             ]);
         });
 

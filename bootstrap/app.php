@@ -3,6 +3,7 @@
 use App\MCP\Exceptions\AuthorizationFailedException;
 use App\MCP\Exceptions\InvalidToolRequestException;
 use App\MCP\Exceptions\ToolDisabledException;
+use App\MCP\Exceptions\ToolNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -52,5 +53,13 @@ return Application::configure(basePath: dirname(__DIR__))
             }
 
             return response()->json($exception->toArray(), Response::HTTP_SERVICE_UNAVAILABLE);
+        });
+
+        $exceptions->render(function (ToolNotFoundException $exception, Request $request) {
+            if (! $request->is('api/*') && ! $request->expectsJson()) {
+                return null;
+            }
+
+            return response()->json($exception->toArray(), Response::HTTP_NOT_FOUND);
         });
     })->create();

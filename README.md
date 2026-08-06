@@ -27,6 +27,7 @@ This project is building a production-minded Laravel MCP server that exposes int
 - MCP contracts and registry
 - execution pipeline
 - first real MCP tool: `system.overview`
+- authenticated MCP API entry flow: `POST /api/mcp/execute`
 - audit logging
 - queue-ready MCP job execution
 - health endpoints
@@ -70,8 +71,22 @@ php artisan queue:work
 
 The GitHub workflow validates Composer, installs dependencies, runs migrations, checks code style, and executes tests on PHP 8.4.
 
+## Examples
+
+- [System Overview Request](examples/mcp-execute-system-overview.json)
+- [Unauthorized Request Example](examples/mcp-execute-unauthorized.json)
+
+## Demo Support
+
+- [Architecture Notes](docs/architecture.md)
+- [Demo Outline](docs/demo-outline.md)
+- [Architecture Diagram](diagrams/architecture.md)
+- [Sequence Diagram](diagrams/sequence.md)
+- [Threat Model](diagrams/threat-model.md)
+
 ## Docs
 
+- [Architecture](docs/architecture.md)
 - [Security](docs/security.md)
 - [Authentication](docs/authentication.md)
 - [Logging](docs/logging.md)

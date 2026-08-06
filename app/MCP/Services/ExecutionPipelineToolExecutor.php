@@ -79,6 +79,7 @@ class ExecutionPipelineToolExecutor implements ToolExecutorInterface
                 successful: $result->successful,
                 recordedAt: CarbonImmutable::now(),
                 ipAddress: $request->context->ipAddress,
+                requestId: $request->context->requestId,
                 durationInMilliseconds: $durationInMilliseconds,
                 failureReason: $result->successful ? null : $result->message,
             ));
@@ -96,6 +97,7 @@ class ExecutionPipelineToolExecutor implements ToolExecutorInterface
                 successful: false,
                 recordedAt: CarbonImmutable::now(),
                 ipAddress: $request->context->ipAddress,
+                requestId: $request->context->requestId,
                 durationInMilliseconds: $durationInMilliseconds,
                 failureReason: $exception->getMessage(),
             ));
